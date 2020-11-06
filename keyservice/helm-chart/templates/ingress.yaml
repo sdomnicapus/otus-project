@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "otus-project.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "otus-project.name" . }}
+    helm.sh/chart: {{ include "otus-project.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    env: {{ .Release.Namespace }}
+  annotations:
+{{ toYaml .Values.ingress.annotations | indent 4 }}
+spec:
+  rules:
+  - host: {{ .Values.ingress.fqdn.name -}}.otus-project.solutions
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "otus-project.fullname" . }}
+          servicePort: http
+        path: /
+  tls:
+    - hosts:
+      - {{ .Values.ingress.fqdn.name -}}.otus-project.solutions
+      secretName: {{ .Values.ingress.fqdn.name -}}.otus-project.solutions-tls

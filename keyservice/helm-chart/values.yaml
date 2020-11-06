@@ -1,0 +1,44 @@
+# System
+replicaCount: 1
+
+image:
+  repository: registry.otus-project.solutions:5000
+  image: keyservice/cube.core
+  #tag: latest
+  tag: master.2101
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  appport: 8000
+
+global:
+  env: ""
+
+ingress:
+  annotations:
+      cert-manager.io/cluster-issuer: letsencrypt
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+  fqdn:
+    name: otus-project
+
+  tls: true  
+
+resources: {}
+
+auth:
+  user: pass
+
+nodeSelector:
+  usecase: workload
+
+tolerations: []
+
+affinity: {}
+
+# Application

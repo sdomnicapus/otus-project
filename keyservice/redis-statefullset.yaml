@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: prod
+spec:
+  serviceName: redis
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      nodeSelector:
+        usecase: workload
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - redis
+            topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: redis
+        image: redis:5.0.7-alpine
+        ports:
+        - name: redis
+          protocol: TCP
+          containerPort: 6379
+        livenessProbe:
+          exec:
+            command: ["redis-cli", "PING"]
+          initialDelaySeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          exec:
+            command: ["redis-cli", "PING"]
+          initialDelaySeconds: 10
+          timeoutSeconds: 10
+        imagePullPolicy: Always
