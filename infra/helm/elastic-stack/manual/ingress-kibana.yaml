@@ -17,7 +17,7 @@ metadata:
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - admin otus'
 spec:
   rules:
-  - host: kibana.yc-infra.otus-project.solutions
+  - host: kibana.otus-project.solutions
     http:
       paths:
       - backend:
@@ -26,5 +26,5 @@ spec:
         path: /
   tls:
   - hosts:
-    - kibana.yc-infra.otus-project.solutions
+    - kibana.otus-project.solutions
     secretName: ssl-kibana-dev
