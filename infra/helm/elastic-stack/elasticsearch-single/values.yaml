@@ -1,0 +1,32 @@
+---
+antiAffinity: "soft"
+nodeAffinity: {}
+# nodeSelector: {}
+# podAnnotations:
+#   example: client-foo
+
+initImage:
+  repository: "busybox"
+  tag: "latest"
+  pullPolicy: "Always"
+
+image:
+  repository: "docker.elastic.co/elasticsearch/elasticsearch-oss"
+  tag: "6.5.3"
+  pullPolicy: "IfNotPresent"
+
+cluster_name: "elasticsearch"
+
+heapSize: "512m"
+
+resources:
+  requests:
+    cpu: "25m"
+    memory: "512Mi"
+
+persistence:
+  enabled: false
+  accessMode: ReadWriteOnce
+  name: elasticsearch-data
+  size: "10Gi"
+  # storageClass: "ssd"

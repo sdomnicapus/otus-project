@@ -1,0 +1,252 @@
+# Not all values are taken from default values file, most of them are left default
+# Here are important/changed values
+global:
+  rbac:
+    create: true
+    pspEnabled: true
+
+alertmanager:
+  enabled: true
+
+  # XXX Config start
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['job']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'null'
+      routes:
+      - match:
+          alertname: DeadMansSwitch
+        receiver: 'null'
+    receivers:
+    - name: 'null'
+
+  # XXX Config end
+
+  service:
+    ## Only used if service.type is 'NodePort'
+    nodePort: 32700
+    type: ClusterIP
+
+  alertmanagerSpec:
+    image:
+      repository: quay.io/prometheus/alertmanager
+      tag: v0.15.3
+
+    secrets: []
+
+    configMaps: []
+
+    replicas: 1
+
+    retention: 24h
+
+    # Missing data for AlertManager is not crucial
+    storage: {}
+
+    paused: false
+
+    # In production may be usable
+    nodeSelector:
+      usecase: monitoring
+
+    ## If specified, the pod's tolerations.
+    ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    ##
+    tolerations: []
+    # - key: "key"
+    #   operator: "Equal"
+    #   value: "value"
+    #   effect: "NoSchedule"
+
+grafana:
+  # Already have Grafana in sandbox env
+  enabled: false
+
+kubelet:
+  enabled: true
+  namespace: kube-system
+
+  serviceMonitor:
+    ## Enable scraping the kubelet over https. For requirements to enable this see
+    ## https://github.com/coreos/prometheus-operator/issues/926
+    ##
+    https: false
+
+# Cannot be monitored in GKE
+kubeControllerManager:
+  enabled: false
+
+# GKE uses kubeDNS
+coreDns:
+  enabled: false
+
+kubeDns:
+  enabled: true
+
+# Cannot be monitored in GKE
+kubeEtcd:
+  enabled: false
+
+# Cannot be monitored in GKE
+kubeScheduler:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: true
+
+kube-state-metrics:
+  rbac:
+    create: true
+
+nodeExporter:
+  enabled: true
+
+prometheus-node-exporter:
+  podLabels:
+    jobLabel: node-exporter
+  extraArgs:
+    - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
+    - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
+
+prometheusOperator:
+  enabled: true
+
+  service:
+    nodePort: 32701
+    type: ClusterIP
+
+  createCustomResource: true
+  cleanupCustomResource: false
+
+  ## If true, the operator will create and maintain a service for scraping kubelets
+  ## ref: https://github.com/coreos/prometheus-operator/blob/master/helm/prometheus-operator/README.md
+  kubeletService:
+    enabled: true
+    namespace: kube-system
+
+  serviceMonitor:
+    selfMonitor: true
+
+  # In production may be usable
+  nodeSelector:
+    usecase: monitoring
+
+  ## Tolerations for use with node taints
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+  # - key: "key"
+  #   operator: "Equal"
+  #   value: "value"
+  #   effect: "NoSchedule"
+
+  image:
+    repository: quay.io/coreos/prometheus-operator
+    tag: v0.26.0
+    pullPolicy: IfNotPresent
+
+  configmapReloadImage:
+    repository: quay.io/coreos/configmap-reload
+    tag: v0.0.1
+
+  prometheusConfigReloaderImage:
+    repository: quay.io/coreos/prometheus-config-reloader
+    tag: v0.26.0
+
+  hyperkubeImage:
+    repository: gcr.io/google-containers/hyperkube
+    tag: v1.12.1
+    pullPolicy: IfNotPresent
+
+prometheus:
+  enabled: true
+  service:
+    nodePort: 32702
+    type: ClusterIP
+
+  rbac:
+    ## Create role bindings in the specified namespaces, to allow Prometheus monitoring
+    ## a role binding in the release namespace will always be created.
+    ##
+    roleNamespaces:
+      - kube-system
+      - dev
+
+  prometheusSpec:
+
+    ## Interval between consecutive scrapes.
+    ##
+    scrapeInterval: ""
+
+    ## Interval between consecutive evaluations.
+    ##
+    evaluationInterval: ""
+
+    ## ListenLocal makes the Prometheus server listen on loopback, so that it does not bind against the Pod IP.
+    ##
+    listenLocal: false
+
+    image:
+      repository: quay.io/prometheus/prometheus
+      tag: v2.5.0
+
+    ## Tolerations for use with node taints
+    ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    ##
+    tolerations: []
+    #  - key: "key"
+    #    operator: "Equal"
+    #    value: "value"
+    #    effect: "NoSchedule"
+
+    # In production may be usable
+    nodeSelector:
+      usecase: monitoring
+
+    retention: 168h
+
+    paused: false
+
+    replicas: 1
+
+    # Need to change to volumeClaimTemplate in `standard` storage class for production
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "ebs-sc"
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+    ## AdditionalScrapeConfigs allows specifying additional Prometheus scrape configurations. Scrape configurations
+    ## are appended to the configurations generated by the Prometheus Operator. Job configurations must have the form
+    ## as specified in the official Prometheus documentation:
+    ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#<scrape_config>. As scrape configs are
+    ## appended, the user is responsible to make sure it is valid. Note that using this feature may expose the possibility
+    ## to break upgrades of Prometheus. It is advised to review Prometheus release notes to ensure that no incompatible
+    ## scrape configs are going to break Prometheus after the upgrade.
+    additionalScrapeConfigs: []
+
+    ## AdditionalAlertManagerConfigs allows for manual configuration of alertmanager jobs in the form as specified
+    ## in the official Prometheus documentation https://prometheus.io/docs/prometheus/latest/configuration/configuration/#<alertmanager_config>.
+    ## AlertManager configurations specified are appended to the configurations generated by the Prometheus Operator.
+    ## As AlertManager configs are appended, the user is responsible to make sure it is valid. Note that using this
+    ## feature may expose the possibility to break upgrades of Prometheus. It is advised to review Prometheus release
+    ## notes to ensure that no incompatible AlertManager configs are going to break Prometheus after the upgrade.
+    additionalAlertManagerConfigs: []
+
+    ## AdditionalAlertRelabelConfigs allows specifying Prometheus alert relabel configurations. Alert relabel configurations specified are appended
+    ## to the configurations generated by the Prometheus Operator. Alert relabel configurations specified must have the form as specified in the
+    ## official Prometheus documentation: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#alert_relabel_configs.
+    ## As alert relabel configs are appended, the user is responsible to make sure it is valid. Note that using this feature may expose the
+    ## possibility to break upgrades of Prometheus. It is advised to review Prometheus release notes to ensure that no incompatible alert relabel
+    ## configs are going to break Prometheus after the upgrade.
+    additionalAlertRelabelConfigs: []
+
+  # Check default values files for details
+  additionalServiceMonitors: []

@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: elasticsearch-single
+  namespace: kube-system
+  labels:
+    app: elasticsearch-single
+    chart: prometheus-operator-1.1.0
+    heritage: Tiller
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app: elasticsearch-exporter
+      chart: elasticsearch-exporter-0.4.1
+      heritage: Tiller
+      release: elasticsearch-exporter
+  endpoints:
+  - path: /metrics
+    port: http
+  namespaceSelector:
+    matchNames:
+    - monitoring

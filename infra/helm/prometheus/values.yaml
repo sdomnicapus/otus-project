@@ -1,0 +1,98 @@
+alertmanager:
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/auth-secret: basic-auth
+      nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - admin otus'
+    labels: {}
+    hosts:
+      - alertmanager.otus-project.otus-project.solutions
+    paths: []
+    # - /
+    tls:
+     - secretName: alertmanager.otus-project.otus-project.solutions-tls
+       hosts:
+       - alertmanager.otus-project.otus-project.solutions
+
+  alertmanagerSpec:
+    storage:
+     volumeClaimTemplate:
+       spec:
+         storageClassName: gp2
+         accessModes: ["ReadWriteOnce"]
+         resources:
+           requests:
+             storage: 50Gi
+
+
+grafana:
+  adminPassword: prom-operator
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/auth-secret: basic-auth
+      nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - admin otus'
+    labels: {}
+    hosts:
+       - grafana.otus-project.otus-project.solutions
+    paths: []
+    #/
+    tls:
+     - secretName: grafana.otus-project.otus-project.solutions-tls
+       hosts:
+       - grafana.otus-project.otus-project.solutions
+
+prometheusOperator:
+  image:
+    repository: quay.io/coreos/prometheus-operator
+    tag: v0.38.1
+    sha: ""
+    pullPolicy: IfNotPresent
+  configmapReloadImage:
+    repository: docker.io/jimmidyson/configmap-reload
+    tag: v0.3.0
+    sha: ""
+
+prometheus:
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/auth-secret: basic-auth
+      nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - admin otus'
+    labels: {}
+
+    hosts:
+      - prometheus.otus-project.otus-project.solutions
+    paths: []
+    # - /
+    tls:
+      - secretName: prometheus.otus-project.otus-project.solutions-tls
+        hosts:
+          - prometheus.otus-project.otus-project.solutions
+
+  prometheusSpec:
+    image:
+      repository: quay.io/prometheus/prometheus
+      tag: v2.18.2
+      sha: ""
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp2
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 100Gi
+ #   selector: {}

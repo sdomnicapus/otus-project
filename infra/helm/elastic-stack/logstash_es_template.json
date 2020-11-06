@@ -1,0 +1,44 @@
+{
+  "order": 0,
+  "index_patterns": [
+    "logstash-*"
+  ],
+  "settings": {
+    "index": {
+      "mapping": {
+        "total_fields": {
+          "limit": "5000"
+        }
+      },
+      "refresh_interval": "5s",
+      "number_of_shards": "1",
+      "number_of_replicas": "0"
+    }
+  },
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "geoip": {
+          "properties": {
+            "longitude": {
+              "type": "float"
+            },
+            "location": {
+              "type": "geo_point"
+            },
+            "latitude": {
+              "type": "float"
+            },
+            "ip": {
+              "type": "ip"
+            }
+          }
+        },
+        "@timestamp": {
+          "type": "date"
+        }
+      }
+    }
+  },
+  "aliases": {}
+}

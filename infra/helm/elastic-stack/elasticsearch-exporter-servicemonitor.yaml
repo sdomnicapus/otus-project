@@ -1,0 +1,24 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: elasticsearch-exporter
+  namespace: kube-system
+  labels:
+    app: elasticsearch-exporter
+    prometheus: prometheus-operator-prometheus
+    release: prometheus-operator
+spec:
+  jobLabel: app
+  selector:
+    matchLabels:
+      app: elasticsearch-exporter
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  endpoints:
+  - port: http
+    path: /metrics
+    targetPort: 9108
+    interval: 10s
+

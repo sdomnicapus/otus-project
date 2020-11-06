@@ -1,0 +1,72 @@
+## nginx configuration
+## Ref: https://github.com/kubernetes/ingress/blob/master/controllers/nginx/configuration.md
+##
+controller:
+  name: controller
+  image:
+    repository: quay.io/kubernetes-ingress-controller/nginx-ingress-controller
+    tag: "0.21.0"
+    pullPolicy: IfNotPresent
+    # www-data -> uid 33
+    runAsUser: 33
+
+  config: {}
+  # Will add custom header to Nginx https://github.com/kubernetes/ingress-nginx/tree/master/docs/examples/customization/custom-headers
+  headers: {}
+
+  ingressClass: nginx
+
+  service:
+    annotations: {}
+    labels: {}
+    clusterIP: ""
+
+    ## List of IP addresses at which the controller services are available
+    ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
+    ##
+    externalIPs: []
+
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+
+    enableHttp: true
+    enableHttps: true
+
+    ## Set external traffic policy to: "Local" to preserve source IP on
+    ## providers supporting it
+    ## Ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
+    externalTrafficPolicy: ""
+
+    healthCheckNodePort: 0
+
+    targetPorts:
+      http: http
+      https: https
+
+    type: LoadBalancer
+
+    # type: NodePort
+    # nodePorts:
+    #   http: 32080
+    #   https: 32443
+    nodePorts:
+      http: ""
+      https: ""
+
+  stats:
+    enabled: true
+
+  metrics:
+    enabled: true
+
+## Default 404 backend
+##
+defaultBackend:
+
+  enabled: true
+
+  name: default-backend
+  image:
+    repository: k8s.gcr.io/defaultbackend
+    tag: "1.4"
+    pullPolicy: IfNotPresent

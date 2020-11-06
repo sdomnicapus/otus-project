@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "elasticsearch-single.fullname" . }}
+  labels:
+    app: {{ template "elasticsearch-single.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+  elasticsearch.yml: |-
+    cluster.name: {{ .Values.cluster_name }}
+
+    node.data: ${NODE_DATA:true}
+    node.master: ${NODE_MASTER:true}
+    node.ingest: ${NODE_INGEST:true}
+    node.name: ${HOSTNAME}
+
+    network.host: 0.0.0.0
+
+    # see https://github.com/kubernetes/kubernetes/issues/3595
+    bootstrap.memory_lock: ${BOOTSTRAP_MEMORY_LOCK:false}
+
+    discovery:
+      zen:
+        ping.unicast.hosts: ${DISCOVERY_SERVICE:}
+        minimum_master_nodes: ${MINIMUM_MASTER_NODES:1}
+
+    # see https://github.com/elastic/elasticsearch-definitive-guide/pull/679
+    processors: ${PROCESSORS:}
+
+    thread_pool.bulk.queue_size: 1000
+
+    gateway.expected_master_nodes: ${EXPECTED_MASTER_NODES:1}
+    gateway.expected_data_nodes: ${EXPECTED_DATA_NODES:1}
+    gateway.recover_after_time: ${RECOVER_AFTER_TIME:5m}
+    gateway.recover_after_master_nodes: ${RECOVER_AFTER_MASTER_NODES:1}
+    gateway.recover_after_data_nodes: ${RECOVER_AFTER_DATA_NODES:1}

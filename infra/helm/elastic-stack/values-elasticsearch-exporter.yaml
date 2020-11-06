@@ -1,0 +1,21 @@
+image:
+  repository: justwatch/elasticsearch_exporter
+  tag: 1.0.2
+  pullPolicy: IfNotPresent
+
+nodeSelector:
+  usecase: monitoring
+
+tolerations: {}
+
+service:
+  type: ClusterIP
+  httpPort: 9108
+
+es:
+  uri: http://elasticsearch-elasticsearch-single.monitoring.svc:9200
+
+web:
+  ## Path under which to expose metrics.
+  ##
+  path: /metrics

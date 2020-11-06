@@ -1,0 +1,8 @@
+apiVersion: v1
+data:
+  auth: ZmV2bGFrZTokYXByMSRiR0pyL0xWTyRhcXo2T3N1V1Q3bndGMDd0WUlteDUxCg==
+kind: Secret
+metadata:
+  name: basic-auth
+  namespace: monitoring
+type: Opaque

@@ -1,0 +1,91 @@
+image:
+  repository: "docker.elastic.co/kibana/kibana-oss"
+  tag: "6.5.3"
+  pullPolicy: "IfNotPresent"
+
+files:
+  kibana.yml:
+    ## Default Kibana configuration from kibana-docker.
+    server.name: kibana
+    server.host: "0"
+    elasticsearch.url: http://elasticsearch-elasticsearch-single.monitoring.svc:9200/
+
+    #service:
+    #  type: ClusterIP
+    #  internalPort: 5601
+    #  authProxyPort: 5602
+
+ingress:
+  enabled: false
+
+livenessProbe:
+  enabled: false
+  initialDelaySeconds: 30
+  timeoutSeconds: 10
+
+readinessProbe:
+  enabled: false
+  initialDelaySeconds: 30
+  timeoutSeconds: 10
+  periodSeconds: 10
+  successThreshold: 5
+
+authProxyEnabled: false
+
+#extraContainers: |
+#  - name: proxy
+#    image: quay.io/pusher/oauth2_proxy:v3.2.0
+#    ports:
+#    - name: proxy
+#      containerPort: 5602
+#    args:
+#    - --login-url=https://gitlab.otus-project.solutions/oauth/authorize
+#    - --redeem-url=https://gitlab.otus-project.solutions/oauth/token
+#    - --validate-url=https://gitlab.otus-project.solutions/api/v4/user
+#    - --redirect-url=https://kibana.aws-infra.otus-project.solutions/oauth2/callback
+#    - --client-id=e81693452407bc5c611ad7925d4ea0a7a1847e68020c5fdc1d9477112ead57a9
+#    - --client-secret=e81693452407bc5c611ad7925d4ea0a7a1847e68020c5fdc1d9477112ead57a9
+#    - --cookie-secret=ArdpurMrJUaCarcbuU7OCNsL
+#    - --email-domain=*
+#    - --http-address=0.0.0.0:5602
+#    - --provider=gitlab
+#    - --upstream=http://127.0.0.1:5601
+
+resources: {}
+
+priorityClassName: ""
+
+# XXX May be used in prod
+# Node labels for pod assignment
+# Ref: https://kubernetes.io/docs/user-guide/node-selection/
+nodeSelector: 
+  usecase: monitoring
+
+replicaCount: 1
+revisionHistoryLimit: 3
+
+plugins:
+  enabled: true
+  reset: false
+  # Use <plugin_name,version,url> to add/upgrade plugin
+  values:
+    - logtrail,0.1.30,https://github.com/sivasamyk/logtrail/releases/download/v0.1.30/logtrail-6.5.3-0.1.30.zip
+
+persistentVolumeClaim:
+  # set to true to use pvc
+  enabled: true
+  # set to true to use you own pvc
+  existingClaim: false
+  annotations: {}
+
+  accessModes:
+    - ReadWriteOnce
+  size: "5Gi"
+  storageClass: "gp2"
+
+# default security context - required to make changed in mounted persistentVolumeClaim
+securityContext:
+  enabled: true
+  allowPrivilegeEscalation: false
+  runAsUser: 1000
+  fsGroup: 2000

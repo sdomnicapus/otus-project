@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "elasticsearch-single.fullname" . }}
+  labels:
+    app: {{ template "elasticsearch-single.name" . }}
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    app: {{ template "elasticsearch-single.name" . }}
+  ports:
+  - name: http
+    port: 9200
+    protocol: TCP
+  - name: transport
+    port: 9300
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "elasticsearch-single.fullname" . }}-discovery
+  labels:
+    app: {{ template "elasticsearch-single.name" . }}
+    release: {{ .Release.Name }}
+spec:
+  clusterIP: None
+  selector:
+    app: {{ template "elasticsearch-single.name" . }}
+  ports:
+  - name: http
+    port: 9200
+    protocol: TCP
+  - name: transport
+    port: 9300
+    protocol: TCP
